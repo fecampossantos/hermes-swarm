@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hermes Swarm Office</title>
+<link rel="stylesheet" href="/static/css/style.css">
+<script src="/static/js/app.js" defer></script>
+</head>
+<body>
+<h1>Hermes Swarm - Office Scene</h1>
+<div id="office"> 
+  <!-- Office background will be set via CSS */
+  <div id="scene">
+    <!-- Characters will be positioned absolutely inside this container -->
+  </div>
+</div>
+<div id="sidebar">
+ луу <button id="addCharBtn">Add Character</button>
+  <h2>Talk to Boss</h2>
+  <textarea id="bossInput" placeholder="Ask boss..."></textarea>
+  <button id="sendBossBtn">Send</button>
+  <div id="bossResponses"></div>
+  <h2>Kanban Board</h2>
+  <div id="kanbanBoard"></div>
+</div>
+
+<!-- Modal for character details -->
+<div id="charModal" class="modal">
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <h3 id="charName"></h3>
+    <p id="charThoughts"></p>
+    <h4>Done Tasks</h4>
+    <ul id="charTasks"></ul>
+  </div>
+</div>
+</body>
+</html>

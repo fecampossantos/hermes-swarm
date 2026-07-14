@@ -1,0 +1,9 @@
+#.
+# requirements.txt for the Hermes Swarm demo
+# --------------------------------------------------------
+# Basic web stack
+Flask==2.3.3
+Flask-SocketIO==5.3.6
+eventlet==0.31.0
+# Optional: for automatic deployment to gunicorn/easy to build use
+# gunicorn==20.1.0
