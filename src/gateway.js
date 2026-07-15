@@ -38,11 +38,25 @@ export async function checkGateway() {
     const baseUrl = gatewayConfig.url.replace(/\/ws$/, '');
     const headers = { "Content-Type": "application/json" };
     
+    if (gatewayConfig.password && !gatewayConfig.username) {
+      headers["Authorization"] = `Bearer ${gatewayConfig.password}`;
+    }
+    
+    // First, check if we already have a valid session/token
+    const resp = await fetch(`${baseUrl}/v1/models`, { 
+      headers, 
+      cache: "no-store" 
+    });
+    
+    if (!resp.redirected && resp.ok) {
+      return true; // Connection is valid
+    }
+    
+    // If it failed (unauthorized/redirected) and we have credentials, try to log in
     if (gatewayConfig.username && gatewayConfig.password) {
-      console.log("Attempting password login to:", `${baseUrl}/auth/password-login`);
       const loginResp = await fetch(`${baseUrl}/auth/password-login`, {
         method: "POST",
-        headers,
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           username: gatewayConfig.username,
           password: gatewayConfig.password,
@@ -50,35 +64,16 @@ export async function checkGateway() {
         }),
         credentials: "include"
       });
+      
       const loginData = await loginResp.json().catch(() => ({}));
-      console.log("Login Response Status:", loginResp.status, "Data:", loginData);
       
       if (loginResp.ok && loginData.ok) {
         return true;
-      } else {
-        console.error("Login failed based on response");
-        return false;
       }
-    } else if (gatewayConfig.password) {
-      headers["Authorization"] = `Bearer ${gatewayConfig.password}`;
-      
-      console.log("Fetching /v1/models...");
-      const resp = await fetch(`${baseUrl}/v1/models`, { 
-        headers, 
-        cache: "no-store" 
-      });
-      
-      console.log("Models Response Status:", resp.status);
-      if (resp.redirected || !resp.ok) return false;
-      
-      const data = await resp.json();
-      console.log("Models Data:", data);
-      return !!data;
     }
     
     return false;
   } catch (e) {
-    console.error("checkGateway error:", e);
     return false;
   }
 }
@@ -140,12 +135,15 @@ export class GatewaySession {
           return;
         }
         
-        if (data.method === "message.delta" || (data.method === "event" && data.params?.type === "message.delta")) {
+        const eventType = data.method === "event" ? data.params?.type : data.method;
+        
+        if (eventType === "message.delta") {
           let chunk = data.method === "message.delta" ? data.params.delta : data.params.payload?.delta;
+          if (!chunk && data.params?.text) chunk = data.params.text; // fallback
           for (let handler of Object.values(this.streamHandlers)) {
             if (handler.onDelta) handler.onDelta(chunk);
           }
-        } else if (data.method === "message.complete") {
+        } else if (eventType === "message.complete") {
           for (let handler of Object.values(this.streamHandlers)) {
             if (handler.onComplete) handler.onComplete();
           }
