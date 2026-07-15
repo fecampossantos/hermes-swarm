@@ -53,27 +53,30 @@ export async function checkGateway() {
       const loginData = await loginResp.json().catch(() => ({}));
       console.log("Login Response Status:", loginResp.status, "Data:", loginData);
       
-      if (!loginResp.ok || !loginData.ok) {
+      if (loginResp.ok && loginData.ok) {
+        return true;
+      } else {
         console.error("Login failed based on response");
         return false;
       }
     } else if (gatewayConfig.password) {
       headers["Authorization"] = `Bearer ${gatewayConfig.password}`;
+      
+      console.log("Fetching /v1/models...");
+      const resp = await fetch(`${baseUrl}/v1/models`, { 
+        headers, 
+        cache: "no-store" 
+      });
+      
+      console.log("Models Response Status:", resp.status);
+      if (resp.redirected || !resp.ok) return false;
+      
+      const data = await resp.json();
+      console.log("Models Data:", data);
+      return !!data;
     }
     
-    console.log("Fetching /api/models...");
-    const resp = await fetch(`${baseUrl}/api/models`, { 
-      headers, 
-      credentials: "include",
-      cache: "no-store" 
-    });
-    
-    console.log("Models Response Status:", resp.status);
-    if (!resp.ok) return false;
-    
-    const data = await resp.json();
-    console.log("Models Data:", data);
-    return !!data;
+    return false;
   } catch (e) {
     console.error("checkGateway error:", e);
     return false;
