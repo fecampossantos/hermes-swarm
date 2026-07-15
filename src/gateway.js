@@ -248,9 +248,12 @@ export async function createCharacter(name, soul) {
 }
 
 export async function sendMessageToAgent(agentName, text, onDelta, onComplete) {
-  const session = sessions[agentName];
+  let session = sessions[agentName];
   if (!session) {
-    throw new Error(`Session not found for agent: ${agentName}`);
+    console.log(`Session not found in memory for agent: ${agentName}. Reconnecting...`);
+    session = new GatewaySession();
+    await session.connect();
+    sessions[agentName] = session;
   }
   await session.submitPrompt(text, onDelta, onComplete);
 }

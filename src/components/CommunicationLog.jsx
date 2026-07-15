@@ -23,7 +23,7 @@ export default function CommunicationLog({ hasBoss, logs, onSendMessage }) {
       <div className="section" style={{ marginBottom: 0, flex: 1, display: 'flex', flexDirection: 'column' }}>
         <h2>Communication</h2>
         
-        <div className="log-messages">
+        <div className="log-messages" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px', maxHeight: '400px' }}>
           {logs.length === 0 ? (
             <div className="msg" style={{ borderLeftColor: 'transparent', color: '#94a3b8' }}>
               No messages yet.
