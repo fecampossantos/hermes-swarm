@@ -33,7 +33,7 @@ export default function CreateAgentForm({ hasBoss, onBossCreated, onAgentCreated
       setSoul('');
     } catch (error) {
       console.error("Failed to create agent", error);
-      alert("Error creating agent via gateway. Ensure gateway is running on :8000. Fallback: creating locally.");
+      alert("Error connecting to agent session. Ensure your API token is set. Fallback: creating locally.");
       
       // Fallback for UI presentation
       if (!hasBoss) {

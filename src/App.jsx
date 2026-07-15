@@ -4,7 +4,7 @@ import AgentModal from "./components/AgentModal";
 import CreateAgentForm from "./components/CreateAgentForm";
 import CommunicationLog from "./components/CommunicationLog";
 import SettingsModal from "./components/SettingsModal";
-import { setGatewayConfig, checkGateway } from "./gateway";
+import { setGatewayConfig, checkGateway, sendMessageToAgent } from "./gateway";
 
 export default function App() {
   const [boss, setBoss] = useState(null);
@@ -16,7 +16,7 @@ export default function App() {
   const [isConnected, setIsConnected] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [gatewayConfigState, setGatewayConfigState] = useState({
-    url: "http://localhost:8000/gateway",
+    url: "/api",
     username: "",
     password: ""
   });
@@ -86,34 +86,54 @@ export default function App() {
     setLogs(prev => [...prev, { sender: 'boss', text: `Welcome to the team, ${newAgent.name}.` }]);
   };
 
-  const handleSendMessage = (text) => {
-    // Add user message
-    setLogs(prev => [...prev, { sender: 'user', text }]);
+  const handleSendMessage = async (text) => {
+    // Add user message with a unique ID so we can append to the reply
+    const msgId = Date.now();
+    setLogs(prev => [...prev, { id: msgId, sender: 'user', text }]);
     
-    // Simulate Boss routing the message
-    setTimeout(() => {
-      setLogs(prev => [...prev, { sender: 'boss', text: `I am processing your request: "${text}"` }]);
-      
-      // If agents exist, boss delegates
-      if (agents.length > 0) {
-        const randomAgent = agents[Math.floor(Math.random() * agents.length)];
-        
-        // Update agent status visually
-        setAgents(prev => prev.map(a => a.name === randomAgent.name ? { ...a, status: 'thinking' } : a));
-        
-        setTimeout(() => {
-          setLogs(prev => [...prev, { 
-            sender: randomAgent.name, 
-            text: `Boss assigned me this. I am working on it based on my SOUL as a ${randomAgent.role}.` 
-          }]);
-          
-          // Revert agent status
-          setTimeout(() => {
-            setAgents(prev => prev.map(a => a.name === randomAgent.name ? { ...a, status: 'idle' } : a));
-          }, 3000);
-        }, 1500);
+    const targetAgent = selectedAgent ? selectedAgent.name : (boss ? boss.name : null);
+    
+    if (!targetAgent) {
+      setLogs(prev => [...prev, { id: msgId + 1, sender: 'system', text: "No agent selected." }]);
+      return;
+    }
+
+    // Create a placeholder for the agent's reply
+    const replyId = msgId + 1;
+    setLogs(prev => [...prev, { id: replyId, sender: targetAgent, text: "" }]);
+    
+    // Update status to 'thinking'
+    setAgents(prev => prev.map(a => a.name === targetAgent ? { ...a, status: 'thinking' } : a));
+    if (boss && targetAgent === boss.name) {
+      setBoss(prev => ({ ...prev, status: 'thinking' }));
+    }
+
+    try {
+      await sendMessageToAgent(targetAgent, text, 
+        // onDelta: Stream the text as it arrives
+        (chunk) => {
+          setLogs(prev => prev.map(log => 
+            log.id === replyId ? { ...log, text: log.text + chunk } : log
+          ));
+        },
+        // onComplete: Finish thinking state
+        () => {
+          setAgents(prev => prev.map(a => a.name === targetAgent ? { ...a, status: 'idle' } : a));
+          if (boss && targetAgent === boss.name) {
+            setBoss(prev => ({ ...prev, status: 'idle' }));
+          }
+        }
+      );
+    } catch (e) {
+      console.error(e);
+      setLogs(prev => prev.map(log => 
+        log.id === replyId ? { ...log, text: log.text + "\n[Error connecting to agent session]" } : log
+      ));
+      setAgents(prev => prev.map(a => a.name === targetAgent ? { ...a, status: 'idle' } : a));
+      if (boss && targetAgent === boss.name) {
+        setBoss(prev => ({ ...prev, status: 'idle' }));
       }
-    }, 1000);
+    }
   };
 
   return (
