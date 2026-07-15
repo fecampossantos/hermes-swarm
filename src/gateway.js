@@ -39,7 +39,7 @@ export async function checkGateway() {
     const headers = { "Content-Type": "application/json" };
     
     if (gatewayConfig.username && gatewayConfig.password) {
-      // Authenticate via password-login to get a session cookie
+      console.log("Attempting password login to:", `${baseUrl}/auth/password-login`);
       const loginResp = await fetch(`${baseUrl}/auth/password-login`, {
         method: "POST",
         headers,
@@ -51,25 +51,31 @@ export async function checkGateway() {
         credentials: "include"
       });
       const loginData = await loginResp.json().catch(() => ({}));
+      console.log("Login Response Status:", loginResp.status, "Data:", loginData);
+      
       if (!loginResp.ok || !loginData.ok) {
+        console.error("Login failed based on response");
         return false;
       }
     } else if (gatewayConfig.password) {
       headers["Authorization"] = `Bearer ${gatewayConfig.password}`;
     }
     
-    // Verify connection using the models endpoint
+    console.log("Fetching /v1/models...");
     const resp = await fetch(`${baseUrl}/v1/models`, { 
       headers, 
       credentials: "include",
       cache: "no-store" 
     });
     
+    console.log("Models Response Status:", resp.status);
     if (!resp.ok) return false;
     
     const data = await resp.json();
+    console.log("Models Data:", data);
     return !!data;
-  } catch {
+  } catch (e) {
+    console.error("checkGateway error:", e);
     return false;
   }
 }
