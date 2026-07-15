@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 /**
  * Communication interface for sending messages to the Boss.
@@ -9,6 +9,13 @@ import React, { useState } from "react";
  */
 export default function CommunicationLog({ hasBoss, logs, onSendMessage }) {
   const [input, setInput] = useState("");
+  const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+    }
+  }, [logs]);
 
   const handleSend = (e) => {
     e.preventDefault();
@@ -33,6 +40,7 @@ export default function CommunicationLog({ hasBoss, logs, onSendMessage }) {
 
         <div
           className="log-messages"
+          ref={messagesEndRef}
           style={{
             flex: 1,
             overflowY: "auto",
@@ -63,7 +71,13 @@ export default function CommunicationLog({ hasBoss, logs, onSendMessage }) {
                       ? "Boss: "
                       : `${log.sender}: `}
                 </strong>
-                {log.text}
+                {log.text === "" && log.sender === "boss" ? (
+                  <span style={{ fontStyle: "italic", color: "#94a3b8" }}>
+                    thinking...
+                  </span>
+                ) : (
+                  log.text
+                )}
               </div>
             ))
           )}
