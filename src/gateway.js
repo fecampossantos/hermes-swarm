@@ -16,7 +16,9 @@ export function getGatewayConfig() {
 
 export async function checkGateway() {
   try {
-    const baseUrl = gatewayConfig.url.replace(/\/ws$/, '');
+    const url = gatewayConfig.url || "";
+    const isProxy = url === "/api" || url === "";
+    const baseUrl = isProxy ? "" : url.replace(/\/ws$/, '');
     const headers = { "Content-Type": "application/json" };
     
     if (gatewayConfig.password && !gatewayConfig.username) {
@@ -24,7 +26,7 @@ export async function checkGateway() {
     }
     
     // First, check if we already have a valid session/token
-    const resp = await fetch(`${baseUrl}/sessions`, { 
+    const resp = await fetch(`${baseUrl}/api/sessions`, { 
       headers, 
       cache: "no-store",
       credentials: "include"
@@ -62,13 +64,15 @@ export async function checkGateway() {
 
 // Kanban API
 export async function dispatchTask(taskText, assign) {
-  const baseUrl = gatewayConfig.url.replace(/\/ws$/, '');
+  const url = gatewayConfig.url || "";
+  const isProxy = url === "/api" || url === "";
+  const baseUrl = isProxy ? "" : url.replace(/\/ws$/, '');
   const headers = { "Content-Type": "application/json" };
   if (gatewayConfig.password && !gatewayConfig.username) {
     headers["Authorization"] = `Bearer ${gatewayConfig.password}`;
   }
 
-  const res = await fetch(`${baseUrl}/kanban/create`, {
+  const res = await fetch(`${baseUrl}/api/kanban/create`, {
     method: 'POST',
     headers,
     credentials: 'include',
@@ -82,13 +86,15 @@ export async function dispatchTask(taskText, assign) {
 }
 
 export async function fetchSessionHistory(sessionKey) {
-  const baseUrl = gatewayConfig.url.replace(/\/ws$/, '');
+  const url = gatewayConfig.url || "";
+  const isProxy = url === "/api" || url === "";
+  const baseUrl = isProxy ? "" : url.replace(/\/ws$/, '');
   const headers = { "Content-Type": "application/json" };
   if (gatewayConfig.password && !gatewayConfig.username) {
     headers["Authorization"] = `Bearer ${gatewayConfig.password}`;
   }
 
-  const res = await fetch(`${baseUrl}/session-history?key=${encodeURIComponent(sessionKey)}`, {
+  const res = await fetch(`${baseUrl}/api/session-history?key=${encodeURIComponent(sessionKey)}`, {
     headers,
     credentials: 'include'
   });

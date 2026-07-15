@@ -9,13 +9,15 @@ export function useKanbanState() {
     
     const poll = async () => {
       try {
-        const baseUrl = gatewayConfig.url.replace(/\/ws$/, '');
+        const url = gatewayConfig.url || "";
+        const isProxy = url === "/api" || url === "";
+        const baseUrl = isProxy ? "" : url.replace(/\/ws$/, '');
         const headers = { "Content-Type": "application/json" };
         if (gatewayConfig.password) {
           headers["Authorization"] = `Bearer ${gatewayConfig.password}`;
         }
 
-        const res = await fetch(`${baseUrl}/kanban/list`, { 
+        const res = await fetch(`${baseUrl}/api/kanban/list`, { 
           headers,
           credentials: 'include' 
         });
