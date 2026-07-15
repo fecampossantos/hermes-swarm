@@ -45,8 +45,7 @@ export default function App() {
     verifyConnection();
     
     // Periodically check connection
-    const interval = setInterval(verifyConnection, 10000);
-    return () => clearInterval(interval);
+    // Removed 10-second polling to avoid spamming the backend
   }, []);
 
   const verifyConnection = async () => {
