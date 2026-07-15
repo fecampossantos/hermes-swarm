@@ -59,19 +59,21 @@ export default function CommunicationLog({ hasBoss, logs, onSendMessage }) {
               No messages yet.
             </div>
           ) : (
-            logs.map((log, idx) => (
+            logs.map((log, idx) => {
+              const isAgent = log.sender !== "user" && log.sender !== "system";
+              return (
               <div
                 key={idx}
-                className={`msg ${log.sender === "boss" ? "boss" : ""}`}
+                className={`msg ${isAgent ? "boss" : ""}`}
               >
                 <strong>
                   {log.sender === "user"
                     ? "You: "
-                    : log.sender === "boss"
-                      ? "Boss: "
+                    : log.sender === "system"
+                      ? "System: "
                       : `${log.sender}: `}
                 </strong>
-                {log.text === "" && log.sender === "boss" ? (
+                {log.text === "" && isAgent ? (
                   <span style={{ fontStyle: "italic", color: "#94a3b8" }}>
                     thinking...
                   </span>
@@ -79,7 +81,7 @@ export default function CommunicationLog({ hasBoss, logs, onSendMessage }) {
                   log.text
                 )}
               </div>
-            ))
+            )})
           )}
         </div>
 

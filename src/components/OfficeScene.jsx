@@ -26,30 +26,20 @@ export default function OfficeScene({ agents, boss, onAgentClick }) {
     <div className="office-scene">
       <div className="office-floor"></div>
       <div className="agents-container">
-        {boss && (
-          <div 
-            className="agent boss" 
-            style={{ left: '50%', top: '15%' }}
-            onClick={() => onAgentClick(boss)}
-          >
-            <div className="agent-sprite">
-              <div className="status-dot"></div>
-            </div>
-            <div className="agent-name">Boss: {boss.name}</div>
-          </div>
-        )}
-        
         {agents.map((agent, i) => (
           <div 
-            key={i} 
+            key={agent.id || i} 
             className="agent" 
             style={getAgentStyle(i, agents.length)}
             onClick={() => onAgentClick(agent)}
           >
             <div className="agent-sprite">
-              <div className={`status-dot ${agent.status === 'thinking' ? 'thinking' : ''}`}></div>
+              <div className={`status-dot ${agent.status === 'working' ? 'thinking' : (agent.status === 'error' ? 'error' : '')}`}></div>
             </div>
-            <div className="agent-name">{agent.name}</div>
+            <div className="agent-name">{agent.profile_name || agent.id || `Worker ${i}`}</div>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '4px' }}>
+              {agent.status || 'idle'}
+            </div>
           </div>
         ))}
       </div>
