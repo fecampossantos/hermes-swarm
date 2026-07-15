@@ -10,13 +10,14 @@ import { checkGateway, setGatewayConfig } from '../gateway';
  */
 export default function SettingsModal({ currentConfig, onSave, onClose }) {
   const [url, setUrl] = useState(currentConfig.url || "");
+  const [username, setUsername] = useState(currentConfig.username || "");
   const [password, setPassword] = useState(currentConfig.password || "");
 
   const [testStatus, setTestStatus] = useState('idle');
 
   const handleSave = (e) => {
     e.preventDefault();
-    onSave({ url, username: "", password });
+    onSave({ url, username, password });
   };
 
   const handleTestConnection = async (e) => {
@@ -24,7 +25,7 @@ export default function SettingsModal({ currentConfig, onSave, onClose }) {
     setTestStatus('testing');
     try {
       // Temporarily set the config to test it
-      setGatewayConfig({ url, username: "", password });
+      setGatewayConfig({ url, username, password });
       const ok = await checkGateway();
       
       if (ok) {
@@ -47,7 +48,7 @@ export default function SettingsModal({ currentConfig, onSave, onClose }) {
         
         <div className="modal-body">
           <p style={{ marginBottom: '16px' }}>
-            Configure the connection to your Hermes Gateway instance. Provide your API Token if authentication is required.
+            Configure the connection to your Hermes Gateway instance.
           </p>
           <form onSubmit={handleSave}>
             <div className="input-group">
@@ -62,12 +63,22 @@ export default function SettingsModal({ currentConfig, onSave, onClose }) {
             </div>
             
             <div className="input-group">
-              <label>API Token (Optional)</label>
+              <label>Username</label>
+              <input 
+                type="text" 
+                value={username} 
+                onChange={e => setUsername(e.target.value)} 
+                placeholder="Leave blank for token auth" 
+              />
+            </div>
+            
+            <div className="input-group">
+              <label>Password (or API Token)</label>
               <input 
                 type="password" 
                 value={password} 
                 onChange={e => setPassword(e.target.value)} 
-                placeholder="Leave blank if no auth" 
+                placeholder="Password or API Token" 
               />
             </div>
             

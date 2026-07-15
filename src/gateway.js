@@ -14,25 +14,20 @@ export function getGatewayConfig() {
   return gatewayConfig;
 }
 
-function getWsUrl() {
+function getBaseWsUrl() {
   let base = gatewayConfig.url;
   let wsUrl = '';
   
   if (base.startsWith('http')) {
     wsUrl = base.replace(/^http/, 'ws');
   } else {
-    // Relative path, use window.location
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const cleanBase = base.startsWith('/') ? base : '/' + base;
     wsUrl = `${protocol}//${window.location.host}${cleanBase}`;
   }
   
   if (!wsUrl.endsWith('/ws')) {
-    wsUrl = wsUrl.replace(/\/$/, '') + '/ws';
-  }
-  
-  if (gatewayConfig.password) {
-    wsUrl += `?token=${encodeURIComponent(gatewayConfig.password)}`;
+    wsUrl = wsUrl.replace(/\/$/, '') + '/api/ws';
   }
   
   return wsUrl;
@@ -40,14 +35,36 @@ function getWsUrl() {
 
 export async function checkGateway() {
   try {
+    const baseUrl = gatewayConfig.url.replace(/\/ws$/, '');
     const headers = { "Content-Type": "application/json" };
-    if (gatewayConfig.password) {
-      headers["Authorization"] = "Bearer " + gatewayConfig.password;
+    
+    if (gatewayConfig.username && gatewayConfig.password) {
+      // Authenticate via password-login to get a session cookie
+      const loginResp = await fetch(`${baseUrl}/auth/password-login`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          username: gatewayConfig.username,
+          password: gatewayConfig.password,
+          provider: "basic"
+        }),
+        credentials: "include"
+      });
+      const loginData = await loginResp.json().catch(() => ({}));
+      if (!loginResp.ok || !loginData.ok) {
+        return false;
+      }
+    } else if (gatewayConfig.password) {
+      headers["Authorization"] = `Bearer ${gatewayConfig.password}`;
     }
     
-    const baseUrl = gatewayConfig.url.replace(/\/ws$/, '');
+    // Verify connection using the models endpoint
+    const resp = await fetch(`${baseUrl}/v1/models`, { 
+      headers, 
+      credentials: "include",
+      cache: "no-store" 
+    });
     
-    const resp = await fetch(`${baseUrl}/models`, { headers, cache: "no-store" });
     if (!resp.ok) return false;
     
     const data = await resp.json();
@@ -67,12 +84,30 @@ export class GatewaySession {
   }
   
   async connect() {
-    return new Promise((resolve, reject) => {
-      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-        return resolve(this.sessionId);
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      return this.sessionId;
+    }
+    
+    let wsUrl = getBaseWsUrl();
+    const baseUrl = gatewayConfig.url.replace(/\/ws$/, '');
+
+    if (gatewayConfig.username && gatewayConfig.password) {
+      // Request ticket using session cookie
+      const ticketRes = await fetch(`${baseUrl}/api/auth/ws-ticket`, {
+        method: "POST",
+        credentials: "include"
+      });
+      if (!ticketRes.ok) {
+        throw new Error("Authentication failed: Could not get WebSocket ticket.");
       }
-      
-      this.ws = new WebSocket(getWsUrl());
+      const ticketData = await ticketRes.json();
+      wsUrl += `?ticket=${ticketData.ticket}`;
+    } else if (gatewayConfig.password) {
+      wsUrl += `?token=${encodeURIComponent(gatewayConfig.password)}`;
+    }
+
+    return new Promise((resolve, reject) => {
+      this.ws = new WebSocket(wsUrl);
       
       this.ws.onopen = () => {
         this.sendRequest("session.create", { cols: 80 })

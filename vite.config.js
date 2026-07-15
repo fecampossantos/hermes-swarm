@@ -10,6 +10,14 @@ export default defineConfig({
         target: 'http://100.65.187.88:9119',
         changeOrigin: true,
         ws: true
+      },
+      '/auth': {
+        target: 'http://100.65.187.88:9119',
+        changeOrigin: true
+      },
+      '/v1': {
+        target: 'http://100.65.187.88:9119',
+        changeOrigin: true
       }
     }
   }
