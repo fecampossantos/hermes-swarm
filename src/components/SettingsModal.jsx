@@ -9,7 +9,7 @@ import { checkGateway, setGatewayConfig } from '../gateway';
  * @param {Function} props.onClose - Callback to close the modal
  */
 export default function SettingsModal({ currentConfig, onSave, onClose }) {
-  const [url, setUrl] = useState(currentConfig.url || "/api");
+  const [url, setUrl] = useState(currentConfig.url || "");
   const [password, setPassword] = useState(currentConfig.password || "");
 
   const [testStatus, setTestStatus] = useState('idle');
@@ -56,7 +56,7 @@ export default function SettingsModal({ currentConfig, onSave, onClose }) {
                 type="text" 
                 value={url} 
                 onChange={e => setUrl(e.target.value)} 
-                placeholder="/api" 
+                placeholder="http://100.65.187.88:9119/api" 
                 required
               />
             </div>

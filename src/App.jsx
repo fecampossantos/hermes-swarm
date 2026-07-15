@@ -16,7 +16,7 @@ export default function App() {
   const [isConnected, setIsConnected] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [gatewayConfigState, setGatewayConfigState] = useState({
-    url: "/api",
+    url: "",
     username: "",
     password: ""
   });
