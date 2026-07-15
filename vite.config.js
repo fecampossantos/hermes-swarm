@@ -9,15 +9,18 @@ export default defineConfig({
       '/api': {
         target: 'http://100.65.187.88:9119',
         changeOrigin: true,
-        ws: true
+        ws: true,
+        cookieDomainRewrite: ''
       },
       '/auth': {
         target: 'http://100.65.187.88:9119',
-        changeOrigin: true
+        changeOrigin: true,
+        cookieDomainRewrite: ''
       },
       '/v1': {
         target: 'http://100.65.187.88:9119',
-        changeOrigin: true
+        changeOrigin: true,
+        cookieDomainRewrite: ''
       }
     }
   }

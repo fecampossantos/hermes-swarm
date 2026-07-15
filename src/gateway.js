@@ -61,8 +61,8 @@ export async function checkGateway() {
       headers["Authorization"] = `Bearer ${gatewayConfig.password}`;
     }
     
-    console.log("Fetching /v1/models...");
-    const resp = await fetch(`${baseUrl}/v1/models`, { 
+    console.log("Fetching /api/models...");
+    const resp = await fetch(`${baseUrl}/api/models`, { 
       headers, 
       credentials: "include",
       cache: "no-store" 
