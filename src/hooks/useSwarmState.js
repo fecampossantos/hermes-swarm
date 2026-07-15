@@ -15,7 +15,7 @@ export function useSwarmState() {
           headers["Authorization"] = `Bearer ${gatewayConfig.password}`;
         }
 
-        const res = await fetch(`${baseUrl}/api/sessions`, { 
+        const res = await fetch(`${baseUrl}/sessions`, { 
           headers,
           credentials: 'include' 
         });

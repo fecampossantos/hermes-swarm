@@ -24,7 +24,7 @@ export async function checkGateway() {
     }
     
     // First, check if we already have a valid session/token
-    const resp = await fetch(`${baseUrl}/api/sessions`, { 
+    const resp = await fetch(`${baseUrl}/sessions`, { 
       headers, 
       cache: "no-store",
       credentials: "include"
@@ -68,7 +68,7 @@ export async function dispatchTask(taskText, assign) {
     headers["Authorization"] = `Bearer ${gatewayConfig.password}`;
   }
 
-  const res = await fetch(`${baseUrl}/api/kanban/create`, {
+  const res = await fetch(`${baseUrl}/kanban/create`, {
     method: 'POST',
     headers,
     credentials: 'include',
@@ -88,7 +88,7 @@ export async function fetchSessionHistory(sessionKey) {
     headers["Authorization"] = `Bearer ${gatewayConfig.password}`;
   }
 
-  const res = await fetch(`${baseUrl}/api/session-history?key=${encodeURIComponent(sessionKey)}`, {
+  const res = await fetch(`${baseUrl}/session-history?key=${encodeURIComponent(sessionKey)}`, {
     headers,
     credentials: 'include'
   });

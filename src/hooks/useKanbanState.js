@@ -15,7 +15,7 @@ export function useKanbanState() {
           headers["Authorization"] = `Bearer ${gatewayConfig.password}`;
         }
 
-        const res = await fetch(`${baseUrl}/api/kanban/list`, { 
+        const res = await fetch(`${baseUrl}/kanban/list`, { 
           headers,
           credentials: 'include' 
         });
