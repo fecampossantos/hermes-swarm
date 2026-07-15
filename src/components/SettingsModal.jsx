@@ -57,8 +57,7 @@ export default function SettingsModal({ currentConfig, onSave, onClose }) {
                 type="text" 
                 value={url} 
                 onChange={e => setUrl(e.target.value)} 
-                placeholder="http://100.65.187.88:9119/api" 
-                required
+                placeholder="Leave empty to use proxy, or enter full URL" 
               />
             </div>
             
