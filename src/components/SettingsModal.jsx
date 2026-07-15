@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { checkGateway, setGatewayConfig } from '../gateway';
 
 /**
  * Modal to configure Hermes Gateway connection.
@@ -8,32 +9,25 @@ import React, { useState } from 'react';
  * @param {Function} props.onClose - Callback to close the modal
  */
 export default function SettingsModal({ currentConfig, onSave, onClose }) {
-  const [url, setUrl] = useState(currentConfig.url || "http://localhost:8000/gateway");
-  const [username, setUsername] = useState(currentConfig.username || "");
+  const [url, setUrl] = useState(currentConfig.url || "/api");
   const [password, setPassword] = useState(currentConfig.password || "");
 
   const [testStatus, setTestStatus] = useState('idle');
 
   const handleSave = (e) => {
     e.preventDefault();
-    onSave({ url, username, password });
+    onSave({ url, username: "", password });
   };
 
   const handleTestConnection = async (e) => {
     e.preventDefault();
     setTestStatus('testing');
     try {
-      const cleanUrl = url.endsWith('/') ? url.slice(0, -1) : url;
-      const headers = { "Content-Type": "application/json" };
-      if (username && password) {
-        headers["Authorization"] = "Basic " + btoa(`${username}:${password}`);
-      }
-      const resp = await fetch(cleanUrl, { 
-        method: "GET",
-        cache: "no-store",
-        headers
-      });
-      if (resp.ok || resp.status === 405 || resp.status === 404) {
+      // Temporarily set the config to test it
+      setGatewayConfig({ url, username: "", password });
+      const ok = await checkGateway();
+      
+      if (ok) {
         setTestStatus('success');
       } else {
         setTestStatus('failed');
@@ -53,7 +47,7 @@ export default function SettingsModal({ currentConfig, onSave, onClose }) {
         
         <div className="modal-body">
           <p style={{ marginBottom: '16px' }}>
-            Configure the connection to your Hermes Gateway instance. If authentication is required, provide the credentials below.
+            Configure the connection to your Hermes Gateway instance. Provide your API Token if authentication is required.
           </p>
           <form onSubmit={handleSave}>
             <div className="input-group">
@@ -62,23 +56,13 @@ export default function SettingsModal({ currentConfig, onSave, onClose }) {
                 type="text" 
                 value={url} 
                 onChange={e => setUrl(e.target.value)} 
-                placeholder="http://localhost:8000/gateway" 
+                placeholder="/api" 
                 required
               />
             </div>
             
             <div className="input-group">
-              <label>Username (Optional)</label>
-              <input 
-                type="text" 
-                value={username} 
-                onChange={e => setUsername(e.target.value)} 
-                placeholder="Leave blank if no auth" 
-              />
-            </div>
-            
-            <div className="input-group">
-              <label>Password (Optional)</label>
+              <label>API Token (Optional)</label>
               <input 
                 type="password" 
                 value={password} 
