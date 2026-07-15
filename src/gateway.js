@@ -138,10 +138,21 @@ export class GatewaySession {
         const eventType = data.method === "event" ? data.params?.type : data.method;
         
         if (eventType === "message.delta") {
-          let chunk = data.method === "message.delta" ? data.params.delta : data.params.payload?.delta;
-          if (!chunk && data.params?.text) chunk = data.params.text; // fallback
-          for (let handler of Object.values(this.streamHandlers)) {
-            if (handler.onDelta) handler.onDelta(chunk);
+          const payload = data.method === "event" ? data.params?.payload : data.params;
+          
+          let chunk = "";
+          if (payload?.delta !== undefined) {
+            chunk = payload.delta;
+          } else if (payload?.text !== undefined) {
+            chunk = payload.text;
+          } else if (payload?.content !== undefined) {
+            chunk = payload.content;
+          }
+          
+          if (chunk) {
+            for (let handler of Object.values(this.streamHandlers)) {
+              if (handler.onDelta) handler.onDelta(chunk);
+            }
           }
         } else if (eventType === "message.complete") {
           for (let handler of Object.values(this.streamHandlers)) {
