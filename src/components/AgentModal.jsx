@@ -6,7 +6,7 @@ import React from 'react';
  * @param {Object} props.agent - The selected agent object
  * @param {Function} props.onClose - Callback to close the modal
  */
-export default function AgentModal({ agent, onClose }) {
+export default function AgentModal({ agent, onClose, onDelete }) {
   if (!agent) return null;
 
   return (
@@ -14,7 +14,10 @@ export default function AgentModal({ agent, onClose }) {
       <div className="modal-content" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{agent.name} {agent.role === 'boss' ? '(Boss)' : ''}</h2>
-          <button className="close-btn" onClick={onClose}>&times;</button>
+          <div>
+            {onDelete && <button className="btn" style={{ background: '#ef4444', marginRight: '8px', padding: '4px 8px' }} onClick={() => onDelete(agent)}>Delete Agent</button>}
+            <button className="close-btn" onClick={onClose}>&times;</button>
+          </div>
         </div>
         
         <div className="modal-body">

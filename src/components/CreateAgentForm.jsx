@@ -33,16 +33,7 @@ export default function CreateAgentForm({ hasBoss, onBossCreated, onAgentCreated
       setSoul('');
     } catch (error) {
       console.error("Failed to create agent", error);
-      alert("Error connecting to agent session. Ensure your API token is set. Fallback: creating locally.");
-      
-      // Fallback for UI presentation
-      if (!hasBoss) {
-        onBossCreated({ name, role: 'boss', status: 'idle', soul: 'I am the Boss.' });
-      } else {
-        onAgentCreated({ name, role, status: 'idle', soul });
-      }
-      setName('');
-      setSoul('');
+      alert("Error connecting to agent session. Ensure your API token is set.");
     }
     setLoading(false);
   };

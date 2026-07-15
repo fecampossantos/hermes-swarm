@@ -46,17 +46,12 @@ export async function checkGateway() {
     }
     
     const baseUrl = gatewayConfig.url.replace(/\/ws$/, '');
-    const endpoints = ['/profiles', '/agents', '/models'];
     
-    for (const ep of endpoints) {
-      try {
-        const resp = await fetch(`${baseUrl}${ep}`, { headers, cache: "no-store" });
-        if (resp.ok) return true;
-      } catch (e) {
-        // ignore and try next
-      }
-    }
-    return false;
+    const resp = await fetch(`${baseUrl}/models`, { headers, cache: "no-store" });
+    if (!resp.ok) return false;
+    
+    const data = await resp.json();
+    return !!data;
   } catch {
     return false;
   }

@@ -86,6 +86,18 @@ export default function App() {
     setLogs(prev => [...prev, { sender: 'boss', text: `Welcome to the team, ${newAgent.name}.` }]);
   };
 
+  const handleDeleteAgent = (agentToDelete) => {
+    if (agentToDelete.role === 'boss') {
+      setBoss(null);
+      setAgents([]);
+      setLogs(prev => [...prev, { sender: 'system', text: `Boss ${agentToDelete.name} has been removed. All agents dismissed.` }]);
+    } else {
+      setAgents(prev => prev.filter(a => a.name !== agentToDelete.name));
+      setLogs(prev => [...prev, { sender: 'boss', text: `Agent ${agentToDelete.name} has been removed from the team.` }]);
+    }
+    setSelectedAgent(null);
+  };
+
   const handleSendMessage = async (text) => {
     // Add user message with a unique ID so we can append to the reply
     const msgId = Date.now();
@@ -195,6 +207,7 @@ export default function App() {
       <AgentModal 
         agent={selectedAgent}
         onClose={() => setSelectedAgent(null)}
+        onDelete={handleDeleteAgent}
       />
       
       {showSettings && (
